@@ -1,0 +1,184 @@
+<html><head><title>Elegant Stopwatch</title>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    }
+    .stopwatch-container {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+    .time-display {
+        font-size: 4rem;
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 20px;
+        transition: all 0.3s ease;
+    }
+    .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 1rem;
+        cursor: pointer;
+        border: none;
+        border-radius: 25px;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+    #startStop {
+        background-color: #4CAF50;
+        color: white;
+    }
+    #startStop:hover {
+        background-color: #45a049;
+    }
+    #reset {
+        background-color: #f44336;
+        color: white;
+    }
+    #reset:hover {
+        background-color: #d32f2f;
+    }
+    #lap {
+        background-color: #2196F3;
+        color: white;
+    }
+    #lap:hover {
+        background-color: #1e88e5;
+    }
+    .laps {
+        max-height: 200px;
+        overflow-y: auto;
+        margin-top: 20px;
+        padding: 10px;
+        border-radius: 10px;
+        background-color: rgba(255, 255, 255, 0.5);
+    }
+    .lap-time {
+        font-size: 1rem;
+        margin: 5px 0;
+        padding: 5px;
+        border-radius: 5px;
+        background-color: rgba(255, 255, 255, 0.8);
+        transition: all 0.3s ease;
+    }
+    .lap-time:nth-child(odd) {
+        background-color: rgba(240, 240, 240, 0.8);
+    }
+    @keyframes pulse {
+        0% {
+            transform: scale(1);
+        }
+        50% {
+            transform: scale(1.05);
+        }
+        100% {
+            transform: scale(1);
+        }
+    }
+    .running .time-display {
+        animation: pulse 1s infinite;
+    }
+</style>
+</head>
+<body>
+<div class="stopwatch-container">
+    <div class="time-display" id="display">00:00:00.000</div>
+    <div class="buttons">
+        <button id="startStop">Start</button>
+        <button id="reset">Reset</button>
+        <button id="lap">Lap</button>
+    </div>
+    <div class="laps" id="laps"></div>
+</div>
+
+<script>
+let startTime;
+let elapsedTime = 0;
+let timerInterval;
+let running = false;
+let lapTimes = [];
+
+const display = document.getElementById('display');
+const startStopButton = document.getElementById('startStop');
+const resetButton = document.getElementById('reset');
+const lapButton = document.getElementById('lap');
+const lapsContainer = document.getElementById('laps');
+
+function startStop() {
+    if (running) {
+        clearInterval(timerInterval);
+        startStopButton.textContent = 'Start';
+        running = false;
+        document.querySelector('.stopwatch-container').classList.remove('running');
+    } else {
+        startTime = Date.now() - elapsedTime;
+        timerInterval = setInterval(updateTime, 10);
+        startStopButton.textContent = 'Stop';
+        running = true;
+        document.querySelector('.stopwatch-container').classList.add('running');
+    }
+}
+
+function reset() {
+    clearInterval(timerInterval);
+    display.textContent = '00:00:00.000';
+    elapsedTime = 0;
+    running = false;
+    startStopButton.textContent = 'Start';
+    lapTimes = [];
+    lapsContainer.innerHTML = '';
+    document.querySelector('.stopwatch-container').classList.remove('running');
+}
+
+function updateTime() {
+    const currentTime = Date.now();
+    elapsedTime = currentTime - startTime;
+    display.textContent = formatTime(elapsedTime);
+}
+
+function formatTime(time) {
+    const date = new Date(time);
+    return date.toISOString().substr(11, 12);
+}
+
+function lap() {
+    if (running) {
+        lapTimes.push(elapsedTime);
+        const lapElement = document.createElement('div');
+        lapElement.classList.add('lap-time');
+        lapElement.textContent = `Lap ${lapTimes.length}: ${formatTime(elapsedTime)}`;
+        lapsContainer.insertBefore(lapElement, lapsContainer.firstChild);
+    }
+}
+
+startStopButton.addEventListener('click', startStop);
+resetButton.addEventListener('click', reset);
+lapButton.addEventListener('click', lap);
+
+// Add keyboard shortcuts
+document.addEventListener('keydown', (event) => {
+    if (event.code === 'Space') {
+        event.preventDefault();
+        startStop();
+    } else if (event.code === 'KeyR') {
+        reset();
+    } else if (event.code === 'KeyL') {
+        lap();
+    }
+});
+</script>
+</body></html>
